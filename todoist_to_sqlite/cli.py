@@ -5,8 +5,7 @@ import json
 import sqlite_utils
 from tqdm import tqdm
 from todoist_to_sqlite import utils
-from pytodoist import todoist
-from pytodoist.api import TodoistAPI
+from todoist_api_python.api import TodoistAPI
 
 
 @click.group()
@@ -44,49 +43,46 @@ def auth(auth):
     click.echo("    $ todoist-to-sqlite sync todoist.db")
     click.echo()
     click.echo("    # (Requires Todoist Premium)")
-    click.echo("    $ todoist-to-sqlite completed-tasks todoist.db")
     click.echo()
 
 
 @cli.command()
-@click.argument(
-    "db_path",
-    type=click.Path(file_okay=True, dir_okay=False, allow_dash=False),
-    required=True,
-)
+@click.argument("db_path", type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
     "-a",
     "--auth",
     type=click.Path(file_okay=True, dir_okay=False, allow_dash=False),
     default="auth.json",
-    help="Path to save tokens to, defaults to auth.json",
+    help="Path to the authentication JSON file, defaults to ./auth.json.",
 )
 def sync(db_path, auth):
-    """Sync todoist data for the authenticated user"""
-    db = sqlite_utils.Database(db_path)
-    try:
-        data = json.load(open(auth))
-        token = data["todoist_api_token"]
-    except (KeyError, FileNotFoundError):
-        utils.error(
-            "Cannot find authentication data, please run `todoist_to_sqlite auth`!"
-        )
-    api = TodoistAPI()
-    sync_data = api.sync(api_token=token, sync_token="*").json()
-    for category in ["items", "labels", "projects", "filters", "notes", "sections"]:
-        db[category].upsert_all(
-            sync_data[category],
-            pk="id",
-            alter=True,
-            foreign_keys=utils.foreign_keys_for(category),
-        )
+    "Sync tasks from Todoist to a SQLite database"
+    if not pathlib.Path(auth).exists():
+        click.echo("Authentication file not found. Please run 'todoist-to-sqlite auth' first.")
+        return
 
-    db["users"].upsert_all(
-        sync_data["collaborators"],
+    auth_data = json.load(open(auth))
+    api_token = auth_data.get("todoist_api_token")
+    if not api_token:
+        click.echo("API token not found in the authentication file.")
+        return
+
+    api = TodoistAPI(api_token)
+    try:
+        tasks = api.get_tasks()
+    except Exception as e:
+        click.echo(f"Error fetching tasks: {e}")
+        return
+
+    db = sqlite_utils.Database(db_path)
+    tasks_table = db["tasks"]
+    tasks_table.insert_all(
+        (task.to_dict() for task in tasks),
         pk="id",
-        foreign_keys=utils.foreign_keys_for("users"),
+        replace=True
     )
-    db["users"].upsert(sync_data["user"], pk="id")
+
+    click.echo(f"Successfully synced {len(tasks)} tasks to {db_path}.")
 
 
 @cli.command()
