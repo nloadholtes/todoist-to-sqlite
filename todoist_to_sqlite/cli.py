@@ -113,16 +113,16 @@ def completed_tasks(db_path, auth, from_date, to_date):
     db = sqlite_utils.Database(db_path)
     try:
         data = json.load(open(auth))
-        token = data["todoist_api_token"]
+        api_token = data["todoist_api_token"]
     except (KeyError, FileNotFoundError):
         utils.error(
             "Cannot find authentication data, please run `todoist_to_sqlite auth`!"
         )
-    api = TodoistAPI()
+    api = TodoistAPI(api_token)
 
     total = None
     if not from_date and not to_date:
-        total = api.get_productivity_stats(token).json().get("completed_count")
+        total = api.get_completed_items()
 
     progress_bar = tqdm(desc="Fetching completed tasks", total=total, unit="tasks")
 
@@ -130,7 +130,7 @@ def completed_tasks(db_path, auth, from_date, to_date):
     offset = 0
     while True:
         resp = api.get_all_completed_tasks(
-            api_token=token,
+            api_token=api_token,
             limit=PAGE_SIZE,
             offset=offset,
             from_date=from_date and from_date.isoformat(),
