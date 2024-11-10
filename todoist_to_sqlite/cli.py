@@ -118,49 +118,45 @@ def completed_tasks(db_path, auth, from_date, to_date):
         utils.error(
             "Cannot find authentication data, please run `todoist_to_sqlite auth`!"
         )
+        return
+
     api = TodoistAPI(api_token)
 
-    total = None
-    if not from_date and not to_date:
-        total = api.get_completed_items()
-
-    progress_bar = tqdm(desc="Fetching completed tasks", total=total, unit="tasks")
+    progress_bar = tqdm(desc="Fetching completed tasks", unit="tasks")
 
     PAGE_SIZE = 200
-    offset = 0
+    cursor = None
+
     while True:
-        resp = api.get_all_completed_tasks(
-            api_token=api_token,
-            limit=PAGE_SIZE,
-            offset=offset,
-            from_date=from_date and from_date.isoformat(),
-            to_date=to_date and to_date.isoformat(),
-        )
-        resp.raise_for_status()
-        data = resp.json()
+        try:
+            response = api.get_all_completed_tasks(
+                limit=PAGE_SIZE,
+                cursor=cursor,
+                since=from_date and from_date.isoformat(),
+                until=to_date and to_date.isoformat(),
+            )
+            tasks = response['items']
+            cursor = response['next_cursor']
+        except Exception as e:
+            utils.error(f"Error fetching completed tasks: {e}")
+            return
 
-        db["items"].upsert_all(
-            data["items"],
-            pk="id",
-            alter=True,
-            foreign_keys=utils.foreign_keys_for("items"),
-        )
-        db["projects"].upsert_all(
-            data["projects"].values(),
-            pk="id",
-            alter=True,
-            foreign_keys=utils.foreign_keys_for("projects"),
-        )
-
-        num_items = len(data["items"])
-        if num_items == 0:
+        if not tasks:
             break
 
-        progress_bar.update(num_items)
-        offset += num_items
-        time.sleep(1)
+        db["completed_tasks"].insert_all(
+            (task for task in tasks),
+            pk="id",
+            replace=True
+        )
+
+        progress_bar.update(len(tasks))
+
+        if not cursor:
+            break
 
     progress_bar.close()
+    click.echo(f"Successfully synced completed tasks to {db_path}.")
 
 
 if __name__ == "__main__":
