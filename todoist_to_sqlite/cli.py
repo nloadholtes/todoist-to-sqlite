@@ -3,9 +3,9 @@ import click
 import pathlib
 import json
 import sqlite_utils
+import requests
 from tqdm import tqdm
 from todoist_to_sqlite import utils
-from todoist_api_python.api import TodoistAPI
 
 
 @click.group()
@@ -67,17 +67,22 @@ def sync(db_path, auth):
         click.echo("API token not found in the authentication file.")
         return
 
-    api = TodoistAPI(api_token)
+    headers = {
+        "Authorization": f"Bearer {api_token}"
+    }
+
     try:
-        tasks = api.get_tasks()
-    except Exception as e:
+        response = requests.get("https://api.todoist.com/rest/v2/tasks", headers=headers)
+        response.raise_for_status()
+        tasks = response.json()
+    except requests.RequestException as e:
         click.echo(f"Error fetching tasks: {e}")
         return
 
     db = sqlite_utils.Database(db_path)
     tasks_table = db["tasks"]
     tasks_table.insert_all(
-        (task.to_dict() for task in tasks),
+        (task for task in tasks),
         pk="id",
         replace=True
     )
@@ -86,13 +91,8 @@ def sync(db_path, auth):
 
 
 @cli.command()
-@click.argument(
-    "db_path",
-    type=click.Path(file_okay=True, dir_okay=False, allow_dash=False),
-    required=True,
-)
+@click.argument("db_path", type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
-    "-a",
     "--auth",
     type=click.Path(file_okay=True, dir_okay=False, allow_dash=False),
     default="auth.json",
@@ -120,7 +120,9 @@ def completed_tasks(db_path, auth, from_date, to_date):
         )
         return
 
-    api = TodoistAPI(api_token)
+    headers = {
+        "Authorization": f"Bearer {api_token}"
+    }
 
     progress_bar = tqdm(desc="Fetching completed tasks", unit="tasks")
 
@@ -128,16 +130,20 @@ def completed_tasks(db_path, auth, from_date, to_date):
     cursor = None
 
     while True:
+        params = {
+            "limit": PAGE_SIZE,
+            "offset": cursor,
+            "since": from_date and from_date.isoformat(),
+            "until": to_date and to_date.isoformat(),
+        }
+
         try:
-            response = api.get_all_completed_tasks(
-                limit=PAGE_SIZE,
-                cursor=cursor,
-                since=from_date and from_date.isoformat(),
-                until=to_date and to_date.isoformat(),
-            )
-            tasks = response['items']
-            cursor = response['next_cursor']
-        except Exception as e:
+            response = requests.get("https://api.todoist.com/sync/v9/completed/get_all", headers=headers, params=params)
+            response.raise_for_status()
+            data = response.json()
+            tasks = data['items']
+            cursor = data['next_cursor']
+        except requests.RequestException as e:
             utils.error(f"Error fetching completed tasks: {e}")
             return
 
