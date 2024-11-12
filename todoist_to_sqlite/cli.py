@@ -142,7 +142,8 @@ def completed_tasks(db_path, auth, from_date, to_date):
             response.raise_for_status()
             data = response.json()
             tasks = data['items']
-            cursor = data['next_cursor']
+            # Cursor does not exist in this world
+            # cursor = data['next_cursor']
         except requests.RequestException as e:
             utils.error(f"Error fetching completed tasks: {e}")
             return
