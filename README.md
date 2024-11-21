@@ -3,6 +3,9 @@
 [![PyPI](https://img.shields.io/pypi/v/todoist-to-sqlite.svg)](https://pypi.org/project/todoist-to-sqlite/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/bcongdon/todoist-to-sqlite/blob/master/LICENSE)
 
+## THIS IS A FORK
+*Quick note: I hacked on this to get it to work for me, but I haven't tried to merge these change back upstream. Leaving this here in case anyone else is interested.*
+
 Save data from Todoist to a SQLite database. Supports saving tasks, projects, filters, notes, labels, and completed tasks.
 
 (Some Todoist features require Premium, like fetching completed tasks)
