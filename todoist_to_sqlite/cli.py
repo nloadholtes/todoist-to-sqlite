@@ -3,7 +3,8 @@ import click
 import pathlib
 import json
 import sqlite_utils
-import requests
+import http.client
+import urllib.parse
 from tqdm import tqdm
 from todoist_to_sqlite import utils
 
@@ -46,6 +47,19 @@ def auth(auth):
     click.echo()
 
 
+def make_request(method, url, headers=None, params=None):
+    parsed_url = urllib.parse.urlparse(url)
+    conn = http.client.HTTPSConnection(parsed_url.netloc)
+    path = parsed_url.path
+    if params:
+        path += '?' + urllib.parse.urlencode(params)
+    conn.request(method, path, headers=headers)
+    response = conn.getresponse()
+    if response.status != 200:
+        raise Exception(f"HTTP request failed with status {response.status}")
+    return json.loads(response.read().decode())
+
+
 @cli.command()
 @click.argument("db_path", type=click.Path(file_okay=True, dir_okay=False))
 @click.option(
@@ -72,10 +86,8 @@ def sync(db_path, auth):
     }
 
     try:
-        response = requests.get("https://api.todoist.com/rest/v2/tasks", headers=headers)
-        response.raise_for_status()
-        tasks = response.json()
-    except requests.RequestException as e:
+        tasks = make_request("GET", "https://api.todoist.com/rest/v1/tasks", headers=headers)
+    except Exception as e:
         click.echo(f"Error fetching tasks: {e}")
         return
 
@@ -138,13 +150,11 @@ def completed_tasks(db_path, auth, from_date, to_date):
         }
 
         try:
-            response = requests.get("https://api.todoist.com/sync/v9/completed/get_all", headers=headers, params=params)
-            response.raise_for_status()
-            data = response.json()
+            data = make_request("GET", "https://api.todoist.com/sync/v9/completed/get_all", headers=headers, params=params)
             tasks = data['items']
             # Cursor does not exist in this world
             # cursor = data['next_cursor']
-        except requests.RequestException as e:
+        except Exception as e:
             utils.error(f"Error fetching completed tasks: {e}")
             return
 

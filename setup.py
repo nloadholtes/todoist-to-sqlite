@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup
 
-VERSION = "0.2"
+VERSION = "0.3"
 
 
 def get_long_description():
@@ -20,18 +20,20 @@ setup(
     long_description_content_type="text/markdown",
     author="Benjamin Congdon",
     author_email="me@bcon.gdn",
-    url="https://github.com/bcongdon/todoist-to-sqlite",
+    maintainer="Nick Loadholtes",
+    maintainer_email="nick@ironboundsoftware.com",
+    url="https://github.com/nloadholtes/todoist-to-sqlite",
     project_urls={
-        "Source": "https://github.com/bcongdon/todoist-to-sqlite",
-        "Issues": "https://github.com/bcongdon/todoist-to-sqlite/issues",
+        "Source": "https://github.com/nloadholtes/todoist-to-sqlite",
+        "Issues": "https://github.com/nloadholtes/todoist-to-sqlite/issues",
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Database",
     ],
     keywords="todoist sqlite export dogsheep",
@@ -43,10 +45,8 @@ setup(
     """,
     install_requires=[
         "click",
-        "requests",
         "sqlite-utils~=3.1",
         "tqdm~=4.36",
-        "pytodoist~=2.1",
     ],
     extras_require={"test": ["pytest"]},
     tests_require=["todoist-to-sqlite[test]"],
