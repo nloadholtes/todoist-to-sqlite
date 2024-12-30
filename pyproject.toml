@@ -1,12 +1,20 @@
 [project]
 name = "todoist-to-sqlite"
 version = "0.2+nloadholtes.1"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["click", "sqlite-utils~=3.1","sqlite-utils~=3.1" ]
+
+[metadata]
+name = "todoist-to-sqlite"
+version = "0.2+nloadholtes.1"
 author = "Benjamin Congdon"
 author_email = "me@bcon.gdn"
 maintainer = "Nick Loadholtes"
 maintainer_email = "nick@ironboundsoftware.com"
 description = "Save data from Todoist to a SQLite database"
-keywords = "todoist, sqlite, export, dogsheep"
+keywords = ["todoist, sqlite, export, dogsheep"]
 url = "https://github.com/nloadholtes/todoist-to-sqlite"
 long_description = "file: README.md"
 long_description_content_type = "text/markdown"
