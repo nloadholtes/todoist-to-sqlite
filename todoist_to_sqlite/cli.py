@@ -86,7 +86,7 @@ def sync(db_path, auth):
     }
 
     try:
-        tasks = make_request("GET", "https://api.todoist.com/rest/v1/tasks", headers=headers)
+        tasks = make_request("GET", "https://api.todoist.com/rest/v2/tasks", headers=headers)
     except Exception as e:
         click.echo(f"Error fetching tasks: {e}")
         return
