@@ -1,31 +1,35 @@
-[metadata]
-name = todoist-to-sqlite
-version = 0.2+nloadholtes.1
-author = Benjamin Congdon
-author_email = me@bcon.gdn
-maintainer = Nick Loadholtes
-maintainer_email = nick@ironboundsoftware.com
-description = Save data from Todoist to a SQLite database
-keywords = todoist, sqlite, export, dogsheep
-url = https://github.com/nloadholtes/todoist-to-sqlite
-long_description = file: README.md
-long_description_content_type = text/markdown
-classifiers =
-    Development Status :: 5 - Production/Stable
-    Environment :: Console
-    Programming Language :: Python :: 3
-    Programming Language :: Python :: 3.8
-    Programming Language :: Python :: 3.10
-    Programming Language :: Python :: 3.11
-    Topic :: Database
-project_urls =
-    Source = https://github.com/nloadholtes/todoist-to-sqlite
-    Issues = https://github.com/nloadholtes/todoist-to-sqlite/issues
+[project]
+name = "todoist-to-sqlite"
+version = "0.2+nloadholtes.1"
+author = "Benjamin Congdon"
+author_email = "me@bcon.gdn"
+maintainer = "Nick Loadholtes"
+maintainer_email = "nick@ironboundsoftware.com"
+description = "Save data from Todoist to a SQLite database"
+keywords = "todoist, sqlite, export, dogsheep"
+url = "https://github.com/nloadholtes/todoist-to-sqlite"
+long_description = "file: README.md"
+long_description_content_type = "text/markdown"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Database"
+]
+project_urls = { "Source" = "https://github.com/nloadholtes/todoist-to-sqlite", "Issues" = "https://github.com/nloadholtes/todoist-to-sqlite/issues" }
 
 [options]
-packages = todoist_to_sqlite
-install_requires = click; sqlite-utils~=3.1; tqdm~=4.36
-tests_require = todoist-to-sqlite[test]
+packages = ["todoist_to_sqlite"]
+install_requires = [
+    "click",
+    "sqlite-utils~=3.1",
+    "tqdm~=4.36"
+]
+tests_require = ["todoist-to-sqlite[test]"]
 
 [options.extras_require]
-test = pytest
+test = ["pytest"]
+
