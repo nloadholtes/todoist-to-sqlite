@@ -142,12 +142,13 @@ def completed_tasks(db_path, auth, from_date, to_date):
     cursor = None
 
     while True:
-        params = {
-            "limit": PAGE_SIZE,
-            "offset": cursor,
-            "since": from_date and from_date.isoformat(),
-            "until": to_date and to_date.isoformat(),
-        }
+        params = {"limit": PAGE_SIZE}
+        if cursor:
+            params["offset"] = cursor
+        if from_date:
+            params["since"] = from_date.isoformat()
+        if to_date:
+            params["until"] = to_date.isoformat()
 
         try:
             data = make_request("GET", "https://api.todoist.com/sync/v9/completed/get_all", headers=headers, params=params)
